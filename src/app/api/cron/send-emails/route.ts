@@ -38,9 +38,10 @@ export async function GET(req: Request) {
         }
 
         // Fetch batch of pending leads with emails
-        // Batch size of 10 to ensure we don't hit the Vercel connection/timeout limits
+        // Since Vercel Hobby limits cron to 1x/day, we attempt a larger batch
+        // Note: Vercel functions have a 10s timeout, so it may still kill the process if the email provider takes too long per request.
         const remainingLimit = settings.daily_email_limit - sentTodayCount;
-        const batchSize = Math.min(10, remainingLimit);
+        const batchSize = Math.min(100, remainingLimit);
 
         const pendingLeads = await Lead.find({
             status: "Pending",
